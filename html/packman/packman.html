@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project</title>
+    <style>
+        body{
+            background-color: black;
+        }
+        h1{
+            color: white;
+        }
+        #scoreboard{
+            color: white;
+        }
+        #p_circle{
+            width: 10px;
+            height: 10px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 1;
+            text-align: center;
+        }
+        #screen{
+            color: white;
+            position: absolute;
+            left: 100px; 
+            top: 100px;
+            z-index: 3;
+            display: block;
+        }
+        #background{
+            background-color: black;
+            position: absolute;
+            width: 700px;
+            height: 440px;
+            left: 0px;
+            top: 0px;
+            opacity: 50%;
+            display: none;
+            z-index: 2;
+        }
+        .enemy{
+            position: absolute; 
+            width: 25px; 
+            height: 25px;
+            text-align: center;
+        }
+    </style>
+    <script>
+        document.addEventListener("keydown", keydown, false); 
+        var itv;
+        var e_itv = new Array(2);
+        var dir_itv = new Array(2);
+        var map = new Array(512);
+        var mapP = [[175,200,245,285,325,365,405,445,490,510], 
+            [22,77,117,157,202,247,284,327,367,410]]; 
+        var x = 175;
+        var y = 22;
+        var score;
+        var highscore = 0;
+        var start, gameover;
+        var scoreboard;
+        var enemy1_x, enemy1_y;
+        var enemy2_x, enemy2_y;
+        var pack;
+        var point = new Array(10);
+        function init(){
+            pack = document.getElementById("packman");
+            scoreboard = document.getElementById("scoreboard");
+            start = gameover = false;
+            x = 175;
+            y = 22;
+            score = 0;
+            enemy1_x = 325, enemy1_y = 202;
+            enemy2_x = 365, enemy2_y = 202;
+            pack.style.left = x + "px";
+            pack.style.top = y + "px";
+            enemy1.style.left = enemy1_x + "px";
+            enemy1.style.top = enemy1_y + "px";
+            enemy2.style.left = enemy2_x + "px";
+            enemy2.style.top = enemy2_y + "px";
+            for (var i = 0; i < map.length; i++) {
+                map[i] = new Array(414);
+            }
+            for(let j=22; j<=412; j++){ //가로 맵 구성
+                if((j>=75 && j<=79) || j==410){ // 2, 10
+                    for(let i=175; i<=510; i++){
+                        map[i][j] = 0;
+                    }
+                }
+                else if((j>=20 && j<=24) || (j>=282 && j<=286)){ // 1, 7
+                    for(let i=175; i<=510; i++){
+                        map
+                        if(i<=325 || i>=365)
+                            map[i][j] = 0;
+                        else
+                            map[i][j] = 1;
+                    }
+                }
+                else if((j>=115 && j<=119) || (j>=365 && j<=369)){ // 3, 9
+                    for(let i=175; i<=510; i++){
+                        if((i>245 && i<285) || (i>325 && i<365) || (i>405 && i<445))
+                            map[i][j] = 1;
+                        else
+                            map[i][j] = 0;
+                    }
+                }
+                else if((j>=155 && j<=159) || (j>=245 && j<=249)){ // 4, 6
+                    for(let i=175; i<=510; i++){
+                        if((i>=285 && i<=405) || (i==245) || (i==445))
+                            map[i][j] = 0;
+                        else
+                            map[i][j] = 1;
+                    }
+                }
+                else if(j>=200 && j<=204){ // 5
+                    for(let i=160; i<=510; i++){
+                        if(i>=405 || i<=285 || (i>=325&&i<=365))
+                            map[i][j] = 0;
+                        else
+                            map[i][j] = 1;
+                    }
+                }
+                else if(j>=325 && j<=329){ // 8
+                    for(let i=175; i<=510; i++){
+                        if((i>200 && i<245) || (i>445&&i<490))
+                            map[i][j] = 1;
+                        else
+                            map[i][j] = 0;
+                    }
+                }
+            } // 5, 7 변경
+            for(let i=175; i<=510; i++){ //세로 맵 구성
+                map[i][21] = 1;
+                map[i][413] = 1;
+                if(i>=325 && i<=365){
+                    for(j=157; j<=202; j++){
+                        map[i][j] = 0;
+                    }
+                }
+                if((i>=173 && i<=177) || (i>=508 && i<=512)){ // 1, 10
+                    for(let j=22; j<=410; j++){
+                        if((j>=22 && j<=117) || (j>=200 && j<=204) || (j>=286 && j<=327) || (j>=367 && j<=410))
+                            map[i][j] = 0;
+                        else
+                            map[i][j] = 1;
+                    }
+                }
+                if((i>=198 && i<=202) || (i>=488 && i<=492)){ // 2, 9
+                    for(let j=22; j<=410; j++){
+                        if(j>=327 && j<=367)
+                            map[i][j] = 0;
+                    }
+                }
+                if((i>=243 && i<=247) || (i>=443 && i<=447)){ // 3, 8
+                    for(let j=22; j<=410; j++){
+                        if(j>=22 && j<=367)
+                            map[i][j] = 0;
+                    }
+                }
+                if((i>=283 && i<=287) || (i>=403 && i<=407)){ // 4, 7
+                    for(let j=22; j<=410; j++){
+                        if((j>=77 && j<=117) ||(j>=157 && j<=286) || (j>=327 && j<=367))
+                            map[i][j] = 0;
+                    }
+                }
+                if((i>=323 && i<=327) || (i>=363 && i<=367)){ // 5, 6
+                    for(let j=22; j<=410; j++){
+                        if((j>=22 && j<=77) ||(j>=117 && j<=157) || (j>=286 && j<=327) || (j>=367 && j<=412))
+                            map[i][j] = 0;
+                    }
+                }
+            }
+            
+            // 포인트 배치 및 설정
+            var game = document.getElementById("game");
+            for (let i = 0; i < 10; i++) {
+                point[i] = new Array(10);
+            }
+            for(let i=0; i<10; i++){
+                for(let j=0; j<10; j++){
+                    point[i][j] = document.createElement("div");
+                    point[i][j].id = "p_circle";
+                    point[i][j].style.left = mapP[0][i] + 7 + "px";
+                    point[i][j].style.top = mapP[1][j] + 7 + "px";
+                    game.appendChild(point[i][j]);
+                }
+            }
+            // 필요없는 포인트 삭제
+            point[0][3].remove(); point[0][5].remove(); point[1][3].remove();
+            point[1][5].remove(); point[8][3].remove(); point[8][5].remove();
+            point[9][3].remove(); point[9][5].remove(); point[0][0].remove();
+            point[4][4].remove(); point[5][4].remove();
+            point[0][0] = null;
+
+            scoreboard.innerText = "Score: " + score + "\nHight Score: " + highscore;
+            
+        }/* 가로 -> 1: 175, 2: 200, 3: 245 4: 285, 5:325 6: 365 7: 405 8:445 9: 490 10:510*/
+        /* 세로 -> 1: 22, 2: 77, 3: 117 4: 157, 5:202 6: 247 7: 284 8:327 9: 367 10:410*/
+        // init 함수 종료
+        function check(){ // 포인트 확인
+            for(let i=0; i<=10; i++){
+                for(let j=0; j<10; j++){
+                    if(((x >= mapP[0][i] - 2) && (x<=mapP[0][i]+2))&&
+                    ((y >= mapP[1][j] - 2) && (y <=mapP[1][j]+2))&&
+                    point[i][j] != null){
+                        point[i][j].remove();
+                        point[i][j] = null;
+                        score += 10;
+                        scoreboard = document.getElementById("scoreboard");
+                        scoreboard.innerText = "Score: " + score + "\nHight Score: " + highscore;
+                    }
+                }
+            }
+            if(score == 890){
+                if(gameover == false){
+                    gameover = true;
+                    clearInterval(itv);
+                    clearInterval(e_itv[0]); 
+                    clearInterval(e_itv[1]);
+                    var screen = document.getElementById("screen");
+                    screen.style.fontSize = "100pt";
+                    screen.innerText = "You win!!";
+                    screen.style.display = "block";
+                    background.style.display = "block";
+                    if(score > highscore)
+                        highscore = score;
+                }
+            }
+        }
+        function touch(){
+            if((((x >= enemy1_x - 3) && (x <= enemy1_x+3)) &&
+            ((y >= enemy1_y - 3) && (y <= enemy1_y+3)))||
+            (((x >= enemy2_x - 3) && (x <= enemy2_x+3)) &&
+            ((y >= enemy2_y - 3) && (y <= enemy2_y+3)))){
+                if(gameover == false){
+                    gameover = true;
+                    clearInterval(itv);
+                    clearInterval(e_itv[0]); 
+                    clearInterval(e_itv[1]);
+                    var screen = document.getElementById("screen");
+                    screen.style.fontSize = "80pt";
+                    screen.innerText = "Game over";
+                    screen.style.display = "block";
+                    background.style.display = "block";
+                    if(score > highscore)
+                        highscore = score;
+                }
+            }
+        }
+        function restart(){
+            var screen = document.getElementById("screen");
+            background.style.display = "none";
+            screen.style.display = "none";
+            for(let i=0; i<10; i++)
+                for(let j=0; j<10; j++)
+                    if(point[i][j] != null)
+                        point[i][j].remove();
+            init();
+            scoreboard.innerText = "Score: " + score + "\nHight Score: " + highscore;
+        }
+        function test(){
+            alert(score);
+        }
+        function keydown(e){
+            if(start == false){
+                start = true;
+                enemy1_move();
+                enemy2_move();
+            }
+            if(gameover == false){
+                if(e.key == "ArrowUp"){
+                    clearInterval(itv);
+                    itv = setInterval(g_up,10);
+                    packman.style.transform = "rotate(270deg)";
+                }
+                if(e.key == "ArrowDown"){
+                    clearInterval(itv);
+                    itv = setInterval(g_down,10);
+                    packman.style.transform = "rotate(90deg)"; 
+                }
+                if(e.key == "ArrowLeft"){
+                    clearInterval(itv);
+                    itv = setInterval(g_left,10);
+                    packman.style.transform = "rotate(180deg)";
+                }
+                if(e.key == "ArrowRight"){
+                    clearInterval(itv);
+                    itv = setInterval(g_right,10);
+                    packman.style.transform = "rotate(0deg)";
+                } 
+            }
+        }
+        function enemy1_move(){
+            let dir = Math.floor(Math.random()*10) % 4;
+            if(dir == 0){
+                clearInterval(e_itv[0]);
+                e_itv[0] = setInterval(enemy1_up,10);
+            }
+            else if(dir == 1){
+                clearInterval(e_itv[0]);
+                e_itv[0] = setInterval(enemy1_down,10);
+            }
+            else if(dir == 2){
+                clearInterval(e_itv[0]);
+                e_itv[0] = setInterval(enemy1_right,10);
+            }
+            else if(dir == 3){
+                clearInterval(e_itv[0]);
+                e_itv[0] = setInterval(enemy1_left,10);
+            }
+        }
+        function enemy1_up(){
+            if(map[enemy1_x][enemy1_y-1] == 0){
+            enemy1_y--;
+            enemy1.style.top = enemy1_y + "px";
+            }
+            else{
+                clearInterval(e_itv[0]);
+                enemy1_move();
+            }
+            touch();
+        }
+        function enemy1_down(){
+            if(map[enemy1_x][enemy1_y+1] == 0){
+                enemy1_y++;
+                enemy1.style.top = enemy1_y + "px";
+                check();
+            }
+            else{
+                clearInterval(e_itv[0]);
+                enemy1_move();
+            }
+            touch();
+        }
+        function enemy1_left(){
+            if(map[enemy1_x-1][enemy1_y] == 0){
+                enemy1_x--;
+                enemy1.style.left = enemy1_x + "px";
+                check();
+            }
+            else{
+                clearInterval(e_itv[0]);
+                enemy1_move();
+            }
+            touch();
+        }
+        function enemy1_right(){
+            if(map[enemy1_x+1][enemy1_y] == 0){
+                enemy1_x++;
+                enemy1.style.left = enemy1_x + "px";
+                check();
+            }
+            else{
+                clearInterval(e_itv[0]);
+                enemy1_move();
+            }
+            touch();
+        }
+        function enemy2_move(){
+            let dir = Math.floor(Math.random()*10) % 4;
+            if(dir == 0){
+                clearInterval(e_itv[1]);
+                e_itv[1] = setInterval(enemy2_up,10);
+            }
+            else if(dir == 1){
+                clearInterval(e_itv[1]);
+                e_itv[1] = setInterval(enemy2_down,10);
+            }
+            else if(dir == 2){
+                clearInterval(e_itv[1]);
+                e_itv[1] = setInterval(enemy2_right,10);
+            }
+            else if(dir == 3){
+                clearInterval(e_itv[1]);
+                e_itv[1] = setInterval(enemy2_left,10);
+            }
+        }
+        function enemy2_up(){
+            if(map[enemy2_x][enemy2_y-1] == 0){
+            enemy2_y--;
+            enemy2.style.top = enemy2_y + "px";
+            }
+            else{
+                clearInterval(e_itv[1]);
+                enemy2_move();
+            }
+            touch();
+        }
+        function enemy2_down(){
+            if(map[enemy2_x][enemy2_y+1] == 0){
+                enemy2_y++;
+                enemy2.style.top = enemy2_y + "px";
+                check();
+            }
+            else{
+                clearInterval(e_itv[1]);
+                enemy2_move();
+            }
+            touch();
+        }
+        function enemy2_left(){
+            if(map[enemy2_x-1][enemy2_y] == 0){
+                enemy2_x--;
+                enemy2.style.left = enemy2_x + "px";
+                check();
+            }
+            else{
+                clearInterval(e_itv[1]);
+                enemy2_move();
+            }
+            touch();
+        }
+        function enemy2_right(){
+            if(map[enemy2_x+1][enemy2_y] == 0){
+                enemy2_x++;
+                enemy2.style.left = enemy2_x + "px";
+                check();
+            }
+            else{
+                clearInterval(e_itv[1]);
+                enemy2_move();
+            }
+            touch();
+        }
+        function map_move(){
+            if(x == 160 && (y>=200 && y<=204)){
+                x = 510;
+                pack.style.left = x + "px";
+            }
+                
+            else if(x == 510 &&(y>=200 && y<=204)){
+                x = 160;
+                pack.style.left = x + "px";
+            }
+                
+            
+        }
+        function g_up(){
+            if(map[x][y-1] == 0){
+                y--;
+                pack.style.top = y + "px";
+                check();
+            } 
+        }
+        function g_down(){
+            if(map[x][y+1] == 0){
+                y++;
+                pack.style.top = y + "px";
+                check();
+            }
+        }
+        function g_left(){
+            if(map[x-1][y] == 0){
+                x--;
+                pack.style.left = x + "px";
+                check();
+            }
+            map_move();
+        }
+        function g_right(){
+            if(map[x+1][y] == 0){
+                x++;
+                pack.style.left = x + "px";
+                check();
+            }
+            map_move();
+        }
+    </script>
+</head>
+<body onload="init()">
+    <h1>Packman</h1>
+    <hr> 
+    <div id="scoreboard"></div>
+    <div style="position: relative;" id="game">
+    <img src="media/map.png" style="width: 710px; height: 475px;"><br>
+    <img src="media/packman.png" id="packman" style="position: absolute; width: 25px; height: 25px; 
+    left: 175px; top: 22px;">
+    <img src="media/enemy1.png" class="enemy" id="enemy1" style="left: 325px; top: 202px;">
+    <img src="media/enemy2.png" class="enemy" id="enemy2" style="left: 365px; top: 202px;">
+    <div id="background" onclick="restart()"></div>
+    <div id="screen"></div>
+    </div>
+</body>
+</html>
